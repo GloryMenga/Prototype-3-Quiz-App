@@ -1,17 +1,15 @@
-import { Text, View } from "react-native";
-import { TextInput } from "react-native-gesture-handler";
+import { View } from "react-native";
+import Home from "../pages/Home"; 
 
 export default function Index() {
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: "yellow",
-        justifyContent: "center",
-        alignItems: "center",
+        backgroundColor: "#A45EE5",
       }}
     >
-      <Text>Hey mijn naam is glory</Text>
+      <Home /> 
     </View>
   );
 }
