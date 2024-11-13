@@ -1,16 +1,30 @@
 import React from 'react';
 import { Text, View, StyleSheet, TextInput, Button } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function Home() {
+
+  const router = useRouter();
 
   const styles = StyleSheet.create({
     title:{
       color: 'white',
       fontSize: 28,
     },
-    start:{
+    join:{
       justifyContent: 'center',
       backgroundColor: '#CDA5F2',
+      borderRadius: 15,
+      borderWidth: 0,
+      marginTop: 30,
+      color: 'white',
+      fontSize: 40,
+      width: 150,
+      height: 50
+    },
+    create:{
+      justifyContent: 'center',
+      backgroundColor: '#A5B5F3',
       borderRadius: 15,
       borderWidth: 0,
       marginTop: 30,
@@ -29,7 +43,7 @@ export default function Home() {
   });
 
   return (
-    <View
+     <View
       style={{
         flex: 1,
         flexDirection: 'column',
@@ -37,17 +51,24 @@ export default function Home() {
         alignItems: 'center',
       }}
     >
-      <Text style={styles.title}>Voer jouw code in:</Text>
+      <Text style={styles.title}>Fill in the code:</Text>
       <TextInput 
-      style={styles.input} 
-      placeholder='Code'
-      keyboardType="number-pad"
+        style={styles.input} 
+        placeholder='Code'
+        keyboardType="number-pad"
       />
-      <View style={styles.start}>
+      <View style={styles.create}>
         <Button
-          title="START"
+          title="CREATE A ROOM"
+          color="A5B5F3"
+          onPress={() => router.push('/CreateRoom')} 
+        />
+      </View>
+      <View style={styles.join}>
+        <Button
+          title="JOIN A ROOM"
           color="CDA5F2"
-          onPress={() => { /* Add your button logic here */ }}
+          onPress={() => router.push('/JoinRoom')} 
         />
       </View>
     </View>
