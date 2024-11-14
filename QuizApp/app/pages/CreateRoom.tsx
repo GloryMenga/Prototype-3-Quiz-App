@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Button } from 'react-native';
 import Slider from '@react-native-community/slider';
+import { router } from 'expo-router';
 
 export default function CreateRoom() {
   const [questions, setQuestions] = useState(0);
@@ -12,6 +13,101 @@ export default function CreateRoom() {
     setTimeLimit(selectedTime);
     setShowDropdown(false);
   };
+
+  const styles = StyleSheet.create({
+    container: {
+      height: '100%',
+      padding: 25,
+      backgroundColor: '#A45EE5',
+    },
+    text: {
+      fontSize: 22,
+      letterSpacing: 2,
+      fontWeight: '800',
+      color: 'white',
+    },
+    sliderContainer: {
+      flexDirection: 'row', 
+      justifyContent: 'space-between',
+      marginTop: 20,
+    },
+    slider: {
+      width: '80%',
+      height: 40,
+    },
+    valueText: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: 'white',
+    },
+    difficulty: {
+      marginTop: 50,
+    },
+    difficultySelector: {
+      flexDirection: 'row',
+      marginTop: 30,
+      borderWidth: 3,
+      borderColor: '#FFF',
+      borderRadius: 5,
+      overflow: 'hidden',
+    },
+    difficultyOption: {
+      flex: 1,
+      paddingVertical: 15,
+      alignItems: 'center',
+      backgroundColor: '#A45EE5',
+    },
+    selected: {
+      backgroundColor: '#7E3ABD', 
+    },
+    difficultyText: {
+      fontSize: 18,
+      color: 'white',
+      fontWeight: '600',
+    },
+    time: {
+      marginTop: 50,
+    },
+    dropdownButton: {
+      paddingVertical: 10,
+      paddingHorizontal: 15,
+      backgroundColor: '#7E3ABD',
+      borderRadius: 5,
+      marginTop: 30,
+    },
+    dropdownButtonText: {
+      fontSize: 18,
+      color: 'white',
+      textAlign: 'center',
+    },
+    dropdown: {
+      backgroundColor: '#FFF',
+      borderRadius: 5,
+    },
+    dropdownItem: {
+      paddingVertical: 10,
+      paddingHorizontal: 15,
+    },
+    dropdownItemText: {
+      fontSize: 18,
+      color: '#7E3ABD',
+    },
+    selectedText: {
+      color: '#A45EE5', 
+      fontWeight: '600',
+    },
+    btn:{
+      justifyContent: 'center',
+      backgroundColor: '#A5B5F3',
+      borderRadius: 15,
+      borderWidth: 0,
+      marginTop: 170,
+      color: 'white',
+      fontSize: 40,
+      width: '100%',
+      height: 50
+    }
+  });
 
   return (
     <View style={styles.container}>
@@ -92,91 +188,14 @@ export default function CreateRoom() {
           </View>
         )}
       </View>
-
+      <View style={styles.btn}>
+        <Button
+          title="CREATE ROOM"
+          color="A5B5F3"
+          onPress={() => router.push('./PlayersWaiting')} 
+        />
+      </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    height: '100%',
-    padding: 25,
-    backgroundColor: '#A45EE5',
-  },
-  text: {
-    fontSize: 22,
-    letterSpacing: 2,
-    fontWeight: '800',
-    color: 'white',
-  },
-  sliderContainer: {
-    flexDirection: 'row', 
-    justifyContent: 'space-between',
-    marginTop: 20,
-  },
-  slider: {
-    width: '80%',
-    height: 40,
-  },
-  valueText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  difficulty: {
-    marginTop: 50,
-  },
-  difficultySelector: {
-    flexDirection: 'row',
-    marginTop: 30,
-    borderWidth: 3,
-    borderColor: '#FFF',
-    borderRadius: 5,
-    overflow: 'hidden',
-  },
-  difficultyOption: {
-    flex: 1,
-    paddingVertical: 15,
-    alignItems: 'center',
-    backgroundColor: '#A45EE5',
-  },
-  selected: {
-    backgroundColor: '#7E3ABD', 
-  },
-  difficultyText: {
-    fontSize: 18,
-    color: 'white',
-    fontWeight: '600',
-  },
-  time: {
-    marginTop: 50,
-  },
-  dropdownButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    backgroundColor: '#7E3ABD',
-    borderRadius: 5,
-    marginTop: 30,
-  },
-  dropdownButtonText: {
-    fontSize: 18,
-    color: 'white',
-    textAlign: 'center',
-  },
-  dropdown: {
-    backgroundColor: '#FFF',
-    borderRadius: 5,
-  },
-  dropdownItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-  },
-  dropdownItemText: {
-    fontSize: 18,
-    color: '#7E3ABD',
-  },
-  selectedText: {
-    color: '#A45EE5', 
-    fontWeight: '600',
-  },
-});
