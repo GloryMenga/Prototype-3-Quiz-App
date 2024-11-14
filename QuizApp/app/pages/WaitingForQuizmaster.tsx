@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   return (
     <View style={styles.container}>
       <Text style={styles.text}>Waiting for a quizmaster</Text>
-      <Text style={styles.p}>/1 Quizmaster</Text>
+      <Text style={styles.p}>0/1 Quizmaster</Text>
       <Text style={styles.p}>1/1 player</Text>
       {/* Start Button */}
     </View>

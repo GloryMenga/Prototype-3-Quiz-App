@@ -1,88 +1,74 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';  
+import { Text, View, StyleSheet, TextInput, Button } from 'react-native';
+import { useRouter } from 'expo-router';
 
-export default function RolePicking() {
-  const router = useRouter();  
+export default function Home() {
+
+  const router = useRouter();
 
   const styles = StyleSheet.create({
-    container: {
-      display: 'flex',
-      flexDirection: 'column',
-      flex: 1,
+    title:{
+      color: 'white',
+      fontSize: 28,
+    },
+    join:{
       justifyContent: 'center',
-      alignItems: 'center',
       backgroundColor: '#CDA5F2',
-      height: '100%',
-    },
-    text: {
-      fontSize: 24,
-      fontWeight: '800',
+      borderRadius: 15,
+      borderWidth: 0,
+      marginTop: 30,
       color: 'white',
+      fontSize: 40,
+      width: 200,
+      height: 50
     },
-    btns: {
-      display: 'flex',
-      justifyContent: 'space-between',
-      flexDirection: 'row',
-      marginTop: 40,
-      width: '65%',
-    },
-    quizmaster: {
-      display: 'flex',
-      flexDirection: 'column',
+    create:{
       justifyContent: 'center',
-      backgroundColor: '#f4a5b0',
-      borderRadius: 10,
-      padding: 10,
-    },
-    player: {
-      display: 'flex',
-      flexDirection: 'column',
-      backgroundColor: '#a5cbf4',
-      borderRadius: 10,
-      padding: 10,
-    },
-    q: {
+      backgroundColor: '#A5B5F3',
+      borderRadius: 15,
+      borderWidth: 0,
+      marginTop: 30,
       color: 'white',
-      textAlign: 'center',
-      marginTop: 5,
-      fontWeight: '600',
-      letterSpacing: 1,
+      fontSize: 40,
+      width: 200,
+      height: 50
     },
-    p: {
-      color: 'white',
+    input:{
+      backgroundColor:'#F2E4FF',
+      marginTop: 30,
+      width: 300,
+      height: 50,
       textAlign: 'center',
-      marginTop: 5,
-      fontWeight: '600',
-      letterSpacing: 1,
     },
   });
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Choose your role:</Text>
-      <View style={styles.btns}>
-        <Pressable
-          style={styles.quizmaster}
-          onPress={() => router.push('./pages/Quizmaster')} 
-        >
-          <Image
-            source={require('../assets/quizmaster.svg')}
-            style={{ width: 80, height: 80 }}
-          />
-          <Text style={styles.q}>Quizmaster</Text>
-        </Pressable>
-
-        <Pressable
-          style={styles.player}
-          onPress={() => router.push('./pages/Player')} 
-        >
-          <Image
-            source={require('../assets/controller.svg')}
-            style={{ width: 80, height: 80 }}
-          />
-          <Text style={styles.p}>Player</Text>
-        </Pressable>
+     <View
+      style={{
+        flex: 1,
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+      }}
+    >
+      <Text style={styles.title}>Fill in the code:</Text>
+      <TextInput 
+        style={styles.input} 
+        placeholder='Code'
+      />
+      <View style={styles.create}>
+        <Button
+          title="CREATE A ROOM"
+          color="A5B5F3"
+          onPress={() => router.push('./pages/CreateRoom')} 
+        />
+      </View>
+      <View style={styles.join}>
+        <Button
+          title="JOIN A ROOM"
+          color="CDA5F2"
+          onPress={() => router.push('./pages/RolePicking')} 
+        />
       </View>
     </View>
   );
