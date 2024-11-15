@@ -45,14 +45,14 @@ export default function RolePicking() {
     q: {
       color: 'white',
       textAlign: 'center',
-      marginTop: 5,
       fontWeight: '600',
+      fontSize: 20,
       letterSpacing: 1,
     },
     p: {
       color: 'white',
       textAlign: 'center',
-      marginTop: 5,
+      fontSize: 20,
       fontWeight: '600',
       letterSpacing: 1,
     },
@@ -66,10 +66,6 @@ export default function RolePicking() {
           style={styles.quizmaster}
           onPress={() => router.push('./WaitingForPlayer')}
         >
-          <Image
-            source={require('../assets/quizmaster.svg')}
-            style={{ width: 80, height: 80 }}
-          />
           <Text style={styles.q}>Quizmaster</Text>
         </Pressable>
 
@@ -77,10 +73,6 @@ export default function RolePicking() {
           style={styles.player}
           onPress={() => router.push('./WaitingForQuizmaster')} 
         >
-          <Image
-            source={require('../assets/controller.svg')}
-            style={{ width: 80, height: 80 }}
-          />
           <Text style={styles.p}>Player</Text>
         </Pressable>
       </View>
