@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 
 function CreateRoom() {
   const [questions, setQuestions] = useState(0);
-  const [difficulty, setDifficulty] = useState('easy');
   const [timeLimit, setTimeLimit] = useState('10 sec');
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -25,25 +24,6 @@ function CreateRoom() {
           className="slider"
         />
         <span className="value-text">{questions}</span>
-      </div>
-
-      <div className="difficulty">
-        <p className="text">Select the difficulty:</p>
-        <div className="difficulty-selector">
-          {['easy', 'medium', 'hard'].map((level) => (
-            <div
-              key={level}
-              className={`difficulty-option ${
-                difficulty === level ? 'selected' : ''
-              }`}
-              onClick={() => setDifficulty(level)}
-            >
-              <span className="difficulty-text">
-                {level.charAt(0).toUpperCase() + level.slice(1)}
-              </span>
-            </div>
-          ))}
-        </div>
       </div>
 
       <div className="time">

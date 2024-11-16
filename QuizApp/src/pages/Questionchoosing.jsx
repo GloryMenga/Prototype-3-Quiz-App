@@ -2,12 +2,11 @@ import React, { useState } from "react";
 import questions from "../assets/questions.json"; 
 
 function Questionchoosing() {
-  const [difficulty, setDifficulty] = useState("easy"); // State for selected difficulty
-  const [selectedQuestion, setSelectedQuestion] = useState(null); // State for selected question
-
+  const [difficulty, setDifficulty] = useState("easy"); 
+  const [selectedQuestion, setSelectedQuestion] = useState(null); 
   const handleDifficultyChange = (event) => {
     setDifficulty(event.target.value);
-    setSelectedQuestion(null); // Clear selected question on difficulty change
+    setSelectedQuestion(null); 
   };
 
   const handleSelectQuestion = (question) => {
