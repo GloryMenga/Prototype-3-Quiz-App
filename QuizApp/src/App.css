@@ -244,3 +244,97 @@ font-weight: 800;
 .waiting-for-quizmaster-role {
   color: white;
 }
+
+/*Questionchoosing*/
+.question-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f4a5b0;
+}
+
+.select-button{
+  margin-top: 30px;
+  border-radius: 8px;
+  background-color: #CDA5F2;
+}
+.dropdown-container {
+  margin-bottom: 20px;
+  text-align: center;
+}
+.dropdown-container select {
+  margin-top: 20px;
+}
+.dropdown-container h1{
+  margin-top: 40px;
+  font-size: 20px;
+  text-align: center;
+}
+.dropdown {
+  padding: 10px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.question-list{
+  margin-top: 30px;
+  width: 70%;
+}
+.question-list h1 {
+  font-size: 20px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.question-list ul {
+  list-style-type: none;
+  padding: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #fff;
+}
+
+.question-item {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.question-item:hover {
+  background-color: #f0f0f0;
+}
+
+.question-item.selected {
+  background-color: #d1e7dd;
+  font-weight: bold;
+}
+
+.select-button {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.select-button button {
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #CDA5F2;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.select-button button:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.select-button button:hover:enabled {
+  background-color: #ad85d3;
+}

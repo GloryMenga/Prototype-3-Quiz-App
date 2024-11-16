@@ -6,6 +6,7 @@ import RolePicking from "./pages/RolePicking.jsx";
 import PlayersWaiting from "./pages/PlayersWaiting.jsx";
 import WaitingForPlayer from "./pages/WaitingForPlayer.jsx";
 import WaitingForQuizmaster from "./pages/WaitingForQuizmaster.jsx";
+import Questionchoosing from "./pages/Questionchoosing.jsx";
 import './App.css';
 
 function App() {
@@ -20,6 +21,7 @@ function App() {
         <Route path="/playerswaiting" element={<PlayersWaiting />} />
         <Route path="/waitingforplayer" element={<WaitingForPlayer />} />
         <Route path="/waitingforquizmaster" element={<WaitingForQuizmaster />} />
+        <Route path="/questionchoosing" element={<Questionchoosing />} />
       </Routes>
     </Router>
   )
