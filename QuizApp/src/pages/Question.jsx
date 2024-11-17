@@ -1,18 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useSocket } from "../context/SocketContext";
 
-function Question(){
-    return(
-        <div className="quiz-container">
-            <div className="question">
-                <h1>Question 1</h1>
-                <p>sdfsdq skqdjjh qsdfdqs fdsqf sqdf sqdf qs?...</p> {/* Dummy question */}
-            </div>
-            <div className="response">
-                <h1>answer: </h1>
-                <p>sdfsdq skqdjjh qsdfdqs fdsqf sqdf sqdf qs</p> {/* Dummy answer */}
-            </div>
-        </div>
-    );
+function Question() {
+  const socket = useSocket();
+  const [question, setQuestion] = useState(null);
+
+  useEffect(() => {
+    socket.on("questionSelected", (q) => {
+      setQuestion(q); // Set the question when received
+    });
+
+    return () => {
+      socket.off("questionSelected");
+    };
+  }, [socket]);
+
+  return (
+    <div className="quiz-container">
+      {question ? (
+        <>
+          <div className="question">
+            <h1>{question.title}</h1>
+            <p>{question.text}</p>
+          </div>
+          <div className="response">
+            <h1>Answer:</h1>
+            <p>{question.answer}</p>
+          </div>
+        </>
+      ) : (
+        <p>Loading question...</p>
+      )}
+    </div>
+  );
 }
 
 export default Question;

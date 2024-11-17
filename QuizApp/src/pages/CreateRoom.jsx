@@ -1,9 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { useSocket } from "../context/SocketContext";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function CreateRoom() {
-  const [questions, setQuestions] = useState(0);
-  const [timeLimit, setTimeLimit] = useState('10 sec');
+  const [questions, setQuestions] = useState(5);
+  const [timeLimit, setTimeLimit] = useState("10 sec");
   const [showDropdown, setShowDropdown] = useState(false);
+  const socket = useSocket();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { roomCode } = location.state; // Get room code from Home
+
+  const handleSaveSettings = () => {
+    const settings = { questions, timeLimit };
+    socket.emit("updateRoomSettings", { roomCode, settings }); // Update settings on the server
+
+    // Navigate to PlayersWaiting
+    navigate("/playerswaiting", { state: { roomCode } });
+  };
 
   const handleTimeSelect = (selectedTime) => {
     setTimeLimit(selectedTime);
@@ -12,26 +26,21 @@ function CreateRoom() {
 
   return (
     <div className="createroom-container">
-      <p className="text">How many questions:</p>
-      <div className="slider-container">
+      <h1>Room Code: {roomCode}</h1>
+      <p className="text">Set up your room settings:</p>
+      <label className="slider-container">
         <input
           type="range"
-          min="0"
+          min="1"
           max="5"
-          step="1"
           value={questions}
           onChange={(e) => setQuestions(Number(e.target.value))}
-          className="slider"
         />
         <span className="value-text">{questions}</span>
-      </div>
-
-      <div className="time">
+      </label>
+      <label className="time">
         <p className="text">Time Limit per Question:</p>
-        <div
-          className="dropdown-button"
-          onClick={() => setShowDropdown(!showDropdown)}
-        >
+        <div className="dropdown-button" onClick={() => setShowDropdown(!showDropdown)}>
           {timeLimit}
         </div>
         {showDropdown && (
@@ -53,14 +62,9 @@ function CreateRoom() {
             ))}
           </div>
         )}
-      </div>
-
+      </label>
       <div className="btn">
-        <button
-          className="create-button"
-        >
-          CREATE ROOM
-        </button>
+        <button className="create-button" onClick={handleSaveSettings}>Save and Continue</button>
       </div>
     </div>
   );

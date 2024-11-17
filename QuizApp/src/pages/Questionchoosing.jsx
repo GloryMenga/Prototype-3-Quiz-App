@@ -1,16 +1,20 @@
 import React, { useState } from "react";
-import questions from "../assets/questions.json"; 
+import { useSocket } from "../context/SocketContext";
+import questions from "../assets/questions.json";
 
 function Questionchoosing() {
-  const [difficulty, setDifficulty] = useState("easy"); 
-  const [selectedQuestion, setSelectedQuestion] = useState(null); 
-  const handleDifficultyChange = (event) => {
-    setDifficulty(event.target.value);
-    setSelectedQuestion(null); 
-  };
+  const [difficulty, setDifficulty] = useState("easy");
+  const [selectedQuestion, setSelectedQuestion] = useState(null);
+  const socket = useSocket();
 
   const handleSelectQuestion = (question) => {
     setSelectedQuestion(question);
+  };
+
+  const sendQuestion = () => {
+    if (selectedQuestion) {
+      socket.emit("questionSelected", selectedQuestion);
+    }
   };
 
   return (
@@ -21,7 +25,7 @@ function Questionchoosing() {
         <select
           id="difficulty"
           value={difficulty}
-          onChange={handleDifficultyChange}
+          onChange={(e) => setDifficulty(e.target.value)}
           className="dropdown"
         >
           <option value="easy">Easy</option>
@@ -46,11 +50,7 @@ function Questionchoosing() {
         </ul>
       </div>
       <div className="select-button">
-        <button
-          type="button"
-          disabled={!selectedQuestion}
-          onClick={() => alert(`Selected Question: ${selectedQuestion?.question}`)}
-        >
+        <button type="button" disabled={!selectedQuestion} onClick={sendQuestion}>
           SELECT
         </button>
       </div>

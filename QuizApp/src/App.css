@@ -31,7 +31,9 @@ input{
   color: white;
   font-family: Arial, sans-serif;
 }
-
+.createroom-container h1{
+  margin-bottom: 30px;
+}
 .text {
 font-size: 22px;
 letter-spacing: 2px;

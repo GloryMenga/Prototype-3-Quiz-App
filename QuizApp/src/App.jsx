@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { SocketProvider } from "./context/SocketContext";
 import Home from "./pages/Home.jsx";
 import CreateRoom from "./pages/CreateRoom.jsx";
 import RolePicking from "./pages/RolePicking.jsx";
@@ -17,21 +18,23 @@ function App() {
   
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/create-room" element={<CreateRoom />} />
-        <Route path="/rolepicking" element={<RolePicking />} />
-        <Route path="/playerswaiting" element={<PlayersWaiting />} />
-        <Route path="/waitingforplayer" element={<WaitingForPlayer />} />
-        <Route path="/waitingforquizmaster" element={<WaitingForQuizmaster />} />
-        <Route path="/questionchoosing" element={<Questionchoosing />} />
-        <Route path="/waitingquestion" element={<WaitingQuestion />} />
-        <Route path="/question" element={<Question />} />
-        <Route path="/quiz" element={<Quiz />} />
-        <Route path="/result" element={<Result />} />
-      </Routes>
-    </Router>
+    <SocketProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/createroom" element={<CreateRoom />} />
+          <Route path="/rolepicking" element={<RolePicking />} />
+          <Route path="/playerswaiting" element={<PlayersWaiting />} />
+          <Route path="/waitingforplayer" element={<WaitingForPlayer />} />
+          <Route path="/waitingforquizmaster" element={<WaitingForQuizmaster />} />
+          <Route path="/questionchoosing" element={<Questionchoosing />} />
+          <Route path="/waitingquestion" element={<WaitingQuestion />} />
+          <Route path="/question" element={<Question />} />
+          <Route path="/quiz" element={<Quiz />} />
+          <Route path="/result" element={<Result />} />
+        </Routes>
+      </Router>
+    </SocketProvider>
   )
 }
 
