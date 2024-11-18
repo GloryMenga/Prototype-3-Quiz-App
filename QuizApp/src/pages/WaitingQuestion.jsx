@@ -1,29 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSocket } from "../context/SocketContext";
+import { useNavigate, useLocation } from "react-router-dom";
 
-function WaitingForQuizmaster() {
+function WaitingQuestion() {
   const socket = useSocket();
-  const [quizmasterJoined, setQuizmasterJoined] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { roomCode } = location.state || {}; // Extract roomCode from location state
 
   useEffect(() => {
-    socket.on("quizmasterJoined", () => {
-      setQuizmasterJoined(true);
+    if (!roomCode) {
+      console.error("Room code is undefined");
+      return;
+    }
+
+    socket.on("questionSelected", (question) => {
+      console.log("Navigating to Quiz page with question.");
+      navigate("/quiz", { state: { question } });
     });
 
     return () => {
-      socket.off("quizmasterJoined");
+      socket.off("questionSelected");
     };
-  }, [socket]);
+  }, [socket, roomCode, navigate]);
 
   return (
-    <div className="waiting-for-quizmaster-container">
-      <p className="waiting-for-quizmaster-text">Waiting for a quizmaster...</p>
-      <p className="waiting-for-quizmaster-role">
-        {quizmasterJoined ? "1/1 Quizmaster" : "0/1 Quizmaster"}
-      </p>
-      <p className="waiting-for-quizmaster-role">1/1 Player</p>
+    <div className="waiting-question-container">
+      <h1 className="waiting-question-text">Waiting for the quizmaster to select a question...</h1>
     </div>
   );
 }
 
-export default WaitingForQuizmaster;
+export default WaitingQuestion;

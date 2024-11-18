@@ -1,31 +1,44 @@
 import React, { useEffect, useState } from "react";
 import { useSocket } from "../context/SocketContext";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function WaitingForPlayer() {
   const socket = useSocket();
-  const [playerCount, setPlayerCount] = useState(1); // Quizmaster already in
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { roomCode } = location.state || {}; // Extract roomCode from location state
+  const [isBothReady, setIsBothReady] = useState(false);
 
   useEffect(() => {
-    socket.on("playerJoined", (count) => {
-      setPlayerCount(count);
-    });
+    if (!roomCode) {
+      console.error("Room code is undefined");
+      return;
+    }
 
-    socket.on("roomReady", () => {
-      // Proceed to the next step when the room is ready
-      socket.emit("startGame"); // Inform the server that the quizmaster is ready
+    console.log("Quizmaster arrived at waiting page, emitting event.");
+    socket.emit("arrivedAtWaitingPage", roomCode);
+
+    socket.on("bothReady", () => {
+      console.log("Received bothReady event");
+      setIsBothReady(true);
     });
 
     return () => {
-      socket.off("playerJoined");
-      socket.off("roomReady");
+      socket.off("bothReady");
     };
-  }, [socket]);
+  }, [socket, roomCode]);
+
+  const handlePlayGame = () => {
+    socket.emit("quizmasterChoosing", roomCode); 
+    navigate("/questionchoosing", { state: { roomCode } }); 
+  };
 
   return (
     <div className="waiting-for-player-container">
-      <p className="waiting-for-player-text">Waiting for a player...</p>
-      <p className="waiting-for-player-role">1/1 Quizmaster</p>
-      <p className="waiting-for-player-role">{playerCount}/1 Player</p>
+      <h1>{isBothReady ? "Player is ready!" : "Waiting for player..."}</h1>
+      {isBothReady && (
+        <button onClick={handlePlayGame}>Start Selecting Question</button>
+      )}
     </div>
   );
 }

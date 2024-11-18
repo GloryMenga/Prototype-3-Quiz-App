@@ -1,22 +1,38 @@
 import React, { useState, useEffect } from "react";
 import { useSocket } from "../context/SocketContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 function Quiz() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [question, setQuestion] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(10);
+  const [timeLeft, setTimeLeft] = useState(10); // Default time, will be updated based on room settings
   const [progress, setProgress] = useState(100);
   const socket = useSocket();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    socket.on("questionSelected", (q) => {
-      setQuestion(q);
-      setAnswers(q.options); // Assuming options contain possible answers
+    // Get the question from navigation state or socket
+    const stateQuestion = location.state?.question;
+    if (stateQuestion) {
+      setQuestion(stateQuestion);
+    } else {
+      socket.on("questionSelected", (q) => setQuestion(q));
+    }
+
+    // Listen for the quiz end
+    socket.on("quizEnded", () => {
+      navigate("/result");
     });
 
+    return () => {
+      socket.off("questionSelected");
+      socket.off("quizEnded");
+    };
+  }, [location, socket, navigate]);
+
+  useEffect(() => {
+    // Handle timer countdown
     if (timeLeft > 0) {
       const timer = setInterval(() => {
         setTimeLeft((prev) => prev - 1);
@@ -24,16 +40,18 @@ function Quiz() {
       }, 1000);
       return () => clearInterval(timer);
     } else {
-      socket.emit("answerTimeUp");
+      handleTimeUp();
     }
-  }, [socket, timeLeft]);
+  }, [timeLeft]);
+
+  const handleTimeUp = () => {
+    socket.emit("answerSubmitted", { questionId: question.id, answer: null });
+    navigate("/waitingquestion"); // Go back to waiting for the next question
+  };
 
   const submitAnswer = () => {
-    socket.emit("submitAnswer", {
-      answer: selectedAnswer,
-      questionId: question.id,
-    });
-    navigate("/result"); // Move to results page after submitting
+    socket.emit("answerSubmitted", { questionId: question.id, answer: selectedAnswer });
+    navigate("/waitingquestion"); // Navigate back to waiting after submitting
   };
 
   return (
@@ -49,14 +67,15 @@ function Quiz() {
             <div className="timer-track">
               <div className="timer-bar" style={{ width: `${progress}%` }}></div>
             </div>
+            <p>Time left: {timeLeft}s</p>
           </div>
 
           <div className="answer-options">
-            {answers.map((answer, index) => (
+            {question.options.map((answer, index) => (
               <div
                 key={index}
-                className={`answer ${selectedAnswer === index ? "selected" : ""}`}
-                onClick={() => setSelectedAnswer(index)}
+                className={`answer ${selectedAnswer === answer ? "selected" : ""}`}
+                onClick={() => setSelectedAnswer(answer)}
               >
                 {answer}
               </div>

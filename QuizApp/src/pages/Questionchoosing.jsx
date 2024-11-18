@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { useSocket } from "../context/SocketContext";
+import { useNavigate } from "react-router-dom";
 import questions from "../assets/questions.json";
 
 function Questionchoosing() {
   const [difficulty, setDifficulty] = useState("easy");
   const [selectedQuestion, setSelectedQuestion] = useState(null);
   const socket = useSocket();
+  const navigate = useNavigate();
 
   const handleSelectQuestion = (question) => {
     setSelectedQuestion(question);
@@ -14,6 +16,7 @@ function Questionchoosing() {
   const sendQuestion = () => {
     if (selectedQuestion) {
       socket.emit("questionSelected", selectedQuestion);
+      navigate("/question");
     }
   };
 
