@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useSocket } from "../context/SocketContext";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -6,8 +6,7 @@ function WaitingForQuizmaster() {
   const socket = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
-  const { roomCode } = location.state || {}; // Extract roomCode from location state
-  const [isBothReady, setIsBothReady] = useState(false);
+  const { roomCode } = location.state || {}; 
 
   useEffect(() => {
     if (!roomCode) {
@@ -15,13 +14,16 @@ function WaitingForQuizmaster() {
       return;
     }
 
-    console.log("Player arrived at waiting page, emitting event.");
+    console.log("Player arrived at waiting page with room code:", roomCode);
     socket.emit("arrivedAtWaitingPage", roomCode);
 
-    // Listen for event to navigate to WaitingQuestion
     socket.on("navigateToWaitingQuestion", (data) => {
-      console.log("Navigating to WaitingQuestion page for Player.");
-      navigate("/waitingquestion", { state: { roomCode: data.roomCode } });
+      console.log("Navigating to WaitingQuestion with room code:", roomCode);
+      navigate("/waitingquestion", { 
+        state: { 
+          roomCode: data.roomCode || roomCode 
+        } 
+      });
     });
 
     return () => {
@@ -31,8 +33,7 @@ function WaitingForQuizmaster() {
 
   return (
     <div className="waiting-for-quizmaster-container">
-      <h1>{isBothReady ? "Quizmaster is ready!" : "Waiting for quizmaster..."}</h1>
-      {isBothReady && <p>You will be redirected when the Quizmaster starts selecting questions.</p>}
+      <h1>Waiting for quizmaster...</h1>
     </div>
   );
 }

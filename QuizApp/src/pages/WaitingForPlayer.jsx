@@ -29,8 +29,9 @@ function WaitingForPlayer() {
   }, [socket, roomCode]);
 
   const handlePlayGame = () => {
-    socket.emit("quizmasterChoosing", roomCode); 
-    navigate("/questionchoosing", { state: { roomCode } }); 
+    console.log("Starting game with room code:", roomCode);
+    socket.emit("quizmasterChoosing", roomCode);
+    navigate("/questionchoosing", { state: { roomCode } });
   };
 
   return (

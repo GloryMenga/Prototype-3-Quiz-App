@@ -27,7 +27,8 @@ function CreateRoom() {
   return (
     <div className="createroom-container">
       <h1>Room Code: {roomCode}</h1>
-      <p className="text">Set up your room settings:</p>
+      <h1 className="text">Set up your room settings:</h1>
+      <p className="text">Choose the amount of questions:</p>
       <label className="slider-container">
         <input
           type="range"

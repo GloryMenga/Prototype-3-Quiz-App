@@ -1,35 +1,54 @@
 import React, { useEffect, useState } from "react";
 import { useSocket } from "../context/SocketContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Added useLocation
 
 function Question() {
   const [question, setQuestion] = useState(null);
   const [playerAnswer, setPlayerAnswer] = useState(null);
+  const [currentLap, setCurrentLap] = useState(1);
   const socket = useSocket();
   const navigate = useNavigate();
+  const location = useLocation(); // Ensure useLocation is defined
+  const roomCode = location.state?.roomCode;
 
   useEffect(() => {
-    // Listen for the selected question
-    socket.on("questionSelected", (q) => setQuestion(q));
+    if (!roomCode) {
+      console.error("Room code missing in Question component");
+      return;
+    }
 
-    // Listen for the player's answer
-    socket.on("answerSubmitted", (answer) => setPlayerAnswer(answer));
+    socket.on("questionSelected", (q) => {
+      setQuestion(q);
+      setPlayerAnswer(null);
+    });
 
-    // Handle end of turn
+    socket.on("answerSubmitted", (data) => {
+      if (typeof data === "object" && data.playerAnswer) {
+        setPlayerAnswer(data.playerAnswer);
+      }
+    });
+
     socket.on("turnEnded", () => {
-      navigate("/questionchoosing"); // Navigate back to question choosing
+      setCurrentLap((prev) => prev + 1);
+      navigate("/questionchoosing", { state: { roomCode } });
+    });
+
+    socket.on("quizEnded", () => {
+      navigate("/result", { state: { roomCode } });
     });
 
     return () => {
       socket.off("questionSelected");
       socket.off("answerSubmitted");
       socket.off("turnEnded");
+      socket.off("quizEnded");
     };
-  }, [socket, navigate]);
+  }, [socket, navigate, roomCode]);
 
   const endTurn = () => {
-    socket.emit("endTurn"); // Notify the server to proceed to the next question
-    navigate("/questionchoosing");
+    if (roomCode) {
+      socket.emit("endTurn", { currentLap, roomCode });
+    }
   };
 
   return (
@@ -37,14 +56,24 @@ function Question() {
       {question ? (
         <>
           <div className="question">
-            <h1>{question.title}</h1>
-            <p>{question.text}</p>
+            <h1>Question {currentLap}</h1>
+            <p>{question.question}</p>
           </div>
 
           <div className="player-answer">
-            <h1>Player's Answer:</h1>
+            <h1>Answer:</h1>
             <p>{playerAnswer || "Waiting for player to answer..."}</p>
           </div>
+
+          {playerAnswer && (
+            <div className="correct-answer">
+              <h1>Correct Answer:</h1>
+              <p>{question.answer}</p>
+              <p>
+                Result: {playerAnswer === question.answer ? "Correct ✅" : "Incorrect ❌"}
+              </p>
+            </div>
+          )}
 
           {playerAnswer && (
             <button onClick={endTurn}>Next Question</button>

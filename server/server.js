@@ -81,11 +81,9 @@ io.on('connection', (socket) => {
       room.state = 'in-progress';
       console.log(`Game started in room ${roomCode}.`);
       room.players.forEach((player) => {
-        console.log(`Assigning role: ${player.role} to socket ID: ${player.id}`);
         io.to(player.id).emit('roleAssigned', player.role);
       });
     } else {
-      console.log(`Room ${roomCode} is not ready to start the game.`);
       socket.emit('error', 'Cannot start game. Room is not ready.');
     }
   });
@@ -96,18 +94,15 @@ io.on('connection', (socket) => {
       console.log(`Quiz started for room ${roomCode}. Notifying players...`);
       room.players.forEach((player) => {
         if (player.role === "quizmaster") {
-          console.log(`Redirecting quizmaster (socket ID: ${player.id}) to WaitingForPlayer.`);
           io.to(player.id).emit("navigateToWaitingForPlayer", { roomCode });
         } else if (player.role === "player") {
-          console.log(`Redirecting player (socket ID: ${player.id}) to WaitingForQuizmaster.`);
           io.to(player.id).emit("navigateToWaitingForQuizmaster", { roomCode });
         }
       });
     } else {
-      console.log(`Room ${roomCode} is not ready to start the quiz.`);
       socket.emit("error", "Room is not ready to start the quiz.");
     }
-  });  
+  });
 
   // Handle player arrival at waiting page
   socket.on('arrivedAtWaitingPage', (roomCode) => {
@@ -116,30 +111,89 @@ io.on('connection', (socket) => {
     const room = rooms[roomCode];
     room.playersReady = (room.playersReady || 0) + 1;
 
-    console.log(`Player (socket ID: ${socket.id}) arrived at waiting page for room ${roomCode}. Total ready: ${room.playersReady}`);
-
     if (room.playersReady === 2) {
-      console.log(`Both players ready in room ${roomCode}. Emitting bothReady event.`);
       io.to(roomCode).emit('bothReady');
       room.playersReady = 0; // Reset for future interactions
     }
   });
 
+  // Handle quizmaster selecting a question
   socket.on("quizmasterChoosing", (roomCode) => {
+    console.log("Quizmaster choosing question for room:", roomCode);
     const room = rooms[roomCode];
     if (room) {
       room.players.forEach((player) => {
         if (player.role === "player") {
-          console.log(`Notifying player to navigate to WaitingQuestion.`);
           io.to(player.id).emit("navigateToWaitingQuestion", { roomCode });
         }
       });
-    } else {
-      console.log(`Room ${roomCode} not found.`);
     }
-  });  
+  });
+
+  socket.on("questionSelected", (questionData) => {
+    const { roomCode, ...question } = questionData;
+    console.log("Question selected for room:", roomCode);
+    
+    if (roomCode && rooms[roomCode]) {
+      rooms[roomCode].currentQuestion = question;
   
+      // Emit to all players in the room
+      io.to(roomCode).emit("questionSelected", {
+        ...question,
+        timeLimit: rooms[roomCode].settings.timeLimit,
+        roomCode // Important: Include roomCode in the emission
+      });
+    } else {
+      console.error(`Room ${roomCode} not found.`);
+      socket.emit("error", "Invalid room code");
+    }
+  });
   
+
+  socket.on("answerSubmitted", ({ questionId, answer, roomCode }) => {
+    const room = rooms[roomCode];
+    if (room && room.currentQuestion) {
+      const isCorrect = answer === room.currentQuestion.answer;
+  
+      room.players.forEach((player) => {
+        if (player.role === "quizmaster") {
+          io.to(player.id).emit("answerSubmitted", {
+            questionId,
+            playerAnswer: answer || "No answer submitted",
+            isCorrect,
+            roomCode
+          });
+        }
+      });
+  
+      if (isCorrect) {
+        room.playerScore = (room.playerScore || 0) + 1;
+      }
+    }
+  });
+  
+  socket.on("endTurn", ({ currentLap, roomCode }) => {
+    const room = rooms[roomCode];
+  
+    if (room) {
+      room.questionsAsked = (room.questionsAsked || 0) + 1;
+  
+      if (room.questionsAsked >= room.settings.questions) {
+        io.to(roomCode).emit("quizResults", {
+          score: room.playerScore || 0,
+          totalQuestions: room.settings.questions,
+          roomCode
+        });
+        io.to(roomCode).emit("quizEnded");
+  
+        room.questionsAsked = 0;
+        room.playerScore = 0;
+      } else {
+        io.to(roomCode).emit("turnEnded", { roomCode });
+      }
+    }
+  });
+
   // Handle disconnection
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);

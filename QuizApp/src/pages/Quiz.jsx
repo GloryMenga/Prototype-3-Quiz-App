@@ -5,53 +5,58 @@ import { useNavigate, useLocation } from "react-router-dom";
 function Quiz() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [question, setQuestion] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(10); // Default time, will be updated based on room settings
+  const [timeLeft, setTimeLeft] = useState(10);
   const [progress, setProgress] = useState(100);
   const socket = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
+  const roomCode = location.state?.roomCode;
 
   useEffect(() => {
-    // Get the question from navigation state or socket
-    const stateQuestion = location.state?.question;
-    if (stateQuestion) {
-      setQuestion(stateQuestion);
-    } else {
-      socket.on("questionSelected", (q) => setQuestion(q));
+    if (!roomCode) {
+      console.error("Room code missing in Quiz component");
+      return;
     }
 
-    // Listen for the quiz end
-    socket.on("quizEnded", () => {
-      navigate("/result");
+    const stateQuestion = location.state?.question;
+    const timeLimitFromServer = location.state?.timeLimit;
+    
+    if (stateQuestion) {
+      setQuestion(stateQuestion);
+      setTimeLeft(parseInt(timeLimitFromServer));
+      setProgress(100);
+    }
+
+    socket.on("questionSelected", (q) => {
+      setQuestion(q);
+      setTimeLeft(parseInt(q.timeLimit));
+      setProgress(100);
     });
 
     return () => {
       socket.off("questionSelected");
-      socket.off("quizEnded");
     };
-  }, [location, socket, navigate]);
-
-  useEffect(() => {
-    // Handle timer countdown
-    if (timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-        setProgress((prev) => (prev > 0 ? prev - 10 : 0));
-      }, 1000);
-      return () => clearInterval(timer);
-    } else {
-      handleTimeUp();
-    }
-  }, [timeLeft]);
+  }, [location, socket, roomCode]);
 
   const handleTimeUp = () => {
-    socket.emit("answerSubmitted", { questionId: question.id, answer: null });
-    navigate("/waitingquestion"); // Go back to waiting for the next question
+    if (!roomCode) return;
+    socket.emit("answerSubmitted", { 
+      questionId: question.id, 
+      answer: null,
+      roomCode 
+    });
+    navigate("/waitingquestion", { state: { roomCode } });
   };
 
   const submitAnswer = () => {
-    socket.emit("answerSubmitted", { questionId: question.id, answer: selectedAnswer });
-    navigate("/waitingquestion"); // Navigate back to waiting after submitting
+    if (selectedAnswer && roomCode) {
+      socket.emit("answerSubmitted", { 
+        questionId: question.id, 
+        answer: selectedAnswer,
+        roomCode 
+      });
+      navigate("/waitingquestion", { state: { roomCode } });
+    }
   };
 
   return (
@@ -59,8 +64,7 @@ function Quiz() {
       {question ? (
         <>
           <div className="question">
-            <h1>{question.title}</h1>
-            <p>{question.text}</p>
+            <h1>{question.question}</h1> {/* Display the question */}
           </div>
 
           <div className="timer">
