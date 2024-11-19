@@ -13,10 +13,16 @@ function Home() {
 
   const handleCreateRoom = () => {
     const roomCode = generateRoomCode();
-    socket.emit("createRoom", { roomCode, settings: { questions: 5, timeLimit: "10 sec" } });
+    // Pass default settings that will be updated in CreateRoom
+    socket.emit("createRoom", { 
+      roomCode, 
+      settings: { 
+        questions: 5, 
+        timeLimit: 10 // Store as number
+      } 
+    });
 
-    // Use only the most recent roomCode
-    socket.once("roomCreated", () => { // Use "once" to ensure only the last room is handled
+    socket.once("roomCreated", () => {
       alert(`Room created! Your code is: ${roomCode}`);
       navigate("/createroom", { state: { roomCode } });
     });

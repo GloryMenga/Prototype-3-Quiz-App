@@ -10,7 +10,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173", // Frontend address
+    origin: "http://localhost:5173", 
     methods: ["GET", "POST"],
   },
 });
@@ -20,7 +20,6 @@ let rooms = {};
 io.on('connection', (socket) => {
   console.log(`User connected: ${socket.id}`);
 
-  // Helper function to validate room code
   function validateRoomCode(roomCode, socket) {
     if (!rooms[roomCode]) {
       console.log(`Invalid room code: ${roomCode}`);
@@ -30,7 +29,6 @@ io.on('connection', (socket) => {
     return true;
   }
 
-  // Handle room creation
   socket.on('createRoom', ({ roomCode, settings }) => {
     if (!rooms[roomCode]) {
       const timeout = setTimeout(() => {
@@ -39,15 +37,20 @@ io.on('connection', (socket) => {
           io.to(roomCode).emit('roomClosed');
           console.log(`Room ${roomCode} auto-deleted due to inactivity.`);
         }
-      }, 60000); // 1 minute
+      }, 60000);
 
       rooms[roomCode] = {
         quizmaster: socket.id,
-        settings,
+        settings: {
+          questions: parseInt(settings.questions),
+          timeLimit: parseInt(settings.timeLimit),
+        },
         players: [{ id: socket.id, role: 'quizmaster' }],
         state: 'waiting',
         timeout,
+        currentQuestionCount: 0,
       };
+      
       socket.join(roomCode);
       io.to(roomCode).emit('playerJoined', rooms[roomCode].players.length);
       io.to(socket.id).emit('roomCreated', roomCode);
@@ -56,7 +59,16 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Handle joining a room
+  socket.on('updateRoomSettings', ({ roomCode, settings }) => {
+    if (rooms[roomCode]) {
+      rooms[roomCode].settings = {
+        questions: parseInt(settings.questions),
+        timeLimit: parseInt(settings.timeLimit),
+      };
+      io.to(roomCode).emit('settingsUpdated', rooms[roomCode].settings);
+    }
+  });
+
   socket.on('joinRoom', (roomCode) => {
     const room = rooms[roomCode];
     if (room && room.players.length < 2) {
@@ -72,7 +84,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // Handle starting the game
   socket.on('startGame', (roomCode) => {
     if (!validateRoomCode(roomCode, socket)) return;
 
@@ -100,11 +111,10 @@ io.on('connection', (socket) => {
         }
       });
     } else {
-      socket.emit("error", "Room is not ready to start the quiz.");
+      socket.emit("error", "Player 2 is ready");
     }
   });
 
-  // Handle player arrival at waiting page
   socket.on('arrivedAtWaitingPage', (roomCode) => {
     if (!validateRoomCode(roomCode, socket)) return;
 
@@ -113,11 +123,10 @@ io.on('connection', (socket) => {
 
     if (room.playersReady === 2) {
       io.to(roomCode).emit('bothReady');
-      room.playersReady = 0; // Reset for future interactions
+      room.playersReady = 0;
     }
   });
 
-  // Handle quizmaster selecting a question
   socket.on("quizmasterChoosing", (roomCode) => {
     console.log("Quizmaster choosing question for room:", roomCode);
     const room = rooms[roomCode];
@@ -132,20 +141,18 @@ io.on('connection', (socket) => {
 
   socket.on("questionSelected", (questionData) => {
     const { roomCode, ...question } = questionData;
-    console.log("Question selected for room:", roomCode);
     
     if (roomCode && rooms[roomCode]) {
       rooms[roomCode].currentQuestion = question;
-  
-      // Emit to all players in the room
+      rooms[roomCode].currentQuestionCount++;
+      
       io.to(roomCode).emit("questionSelected", {
         ...question,
         timeLimit: rooms[roomCode].settings.timeLimit,
-        roomCode // Important: Include roomCode in the emission
+        currentQuestion: rooms[roomCode].currentQuestionCount,
+        totalQuestions: rooms[roomCode].settings.questions,
+        roomCode
       });
-    } else {
-      console.error(`Room ${roomCode} not found.`);
-      socket.emit("error", "Invalid room code");
     }
   });
   
@@ -176,25 +183,30 @@ io.on('connection', (socket) => {
     const room = rooms[roomCode];
   
     if (room) {
-      room.questionsAsked = (room.questionsAsked || 0) + 1;
-  
-      if (room.questionsAsked >= room.settings.questions) {
+      if (room.currentQuestionCount >= room.settings.questions) {
         io.to(roomCode).emit("quizResults", {
           score: room.playerScore || 0,
           totalQuestions: room.settings.questions,
-          roomCode
+          roomCode,
         });
-        io.to(roomCode).emit("quizEnded");
   
-        room.questionsAsked = 0;
-        room.playerScore = 0;
+        room.players.forEach((player) => {
+          io.to(player.id).emit("navigateToResults", {
+            score: room.playerScore || 0,
+            totalQuestions: room.settings.questions,
+            roomCode,
+          });
+        });
       } else {
-        io.to(roomCode).emit("turnEnded", { roomCode });
+        io.to(roomCode).emit("turnEnded", {
+          roomCode,
+          currentQuestion: room.currentQuestionCount,
+          totalQuestions: room.settings.questions,
+        });
       }
     }
   });
-
-  // Handle disconnection
+  
   socket.on('disconnect', () => {
     console.log(`User disconnected: ${socket.id}`);
     Object.keys(rooms).forEach((roomCode) => {

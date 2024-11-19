@@ -10,31 +10,43 @@ function WaitingQuestion() {
 
   useEffect(() => {
     if (!roomCode) {
-      console.error("Room code missing in state");
+      console.error("Room code missing in WaitingQuestion");
       return;
     }
-
+  
     console.log("WaitingQuestion mounted with room code:", roomCode);
-
+  
     const handleQuestionSelected = (questionData) => {
       console.log("Question received:", questionData);
-      // Ensure roomCode is properly passed to the next route
-      const nextRoomCode = questionData.roomCode || roomCode;
-      navigate("/quiz", { 
-        state: { 
+      navigate("/quiz", {
+        state: {
           question: questionData,
-          roomCode: nextRoomCode,
-          timeLimit: questionData.timeLimit
-        } 
+          roomCode,
+          timeLimit: questionData.timeLimit,
+        },
       });
     };
-
+  
+    const handleNavigateToResults = (data) => {
+      console.log("Navigating to results:", data);
+      navigate("/result", {
+        state: {
+          roomCode: data.roomCode,
+          score: data.score,
+          totalQuestions: data.totalQuestions,
+        },
+      });
+    };
+  
     socket.on("questionSelected", handleQuestionSelected);
-
+    socket.on("navigateToResults", handleNavigateToResults);
+  
     return () => {
       socket.off("questionSelected", handleQuestionSelected);
+      socket.off("navigateToResults", handleNavigateToResults);
     };
   }, [socket, roomCode, navigate]);
+  
 
   if (!roomCode) {
     return <p>Error: Room code is missing. Please restart the game.</p>;

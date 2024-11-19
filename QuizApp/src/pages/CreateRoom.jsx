@@ -4,23 +4,27 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 function CreateRoom() {
   const [questions, setQuestions] = useState(5);
-  const [timeLimit, setTimeLimit] = useState("10 sec");
+  const [timeLimit, setTimeLimit] = useState(10);
   const [showDropdown, setShowDropdown] = useState(false);
   const socket = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
-  const { roomCode } = location.state; // Get room code from Home
+  const { roomCode } = location.state;
 
   const handleSaveSettings = () => {
-    const settings = { questions, timeLimit };
-    socket.emit("updateRoomSettings", { roomCode, settings }); // Update settings on the server
-
-    // Navigate to PlayersWaiting
+    const settings = {
+      questions: questions,
+      timeLimit: timeLimit
+    };
+    
+    socket.emit("updateRoomSettings", { roomCode, settings });
     navigate("/playerswaiting", { state: { roomCode } });
   };
 
   const handleTimeSelect = (selectedTime) => {
-    setTimeLimit(selectedTime);
+    // Convert time string to number (e.g., "10 sec" -> 10)
+    const timeValue = parseInt(selectedTime);
+    setTimeLimit(timeValue);
     setShowDropdown(false);
   };
 
@@ -42,22 +46,18 @@ function CreateRoom() {
       <label className="time">
         <p className="text">Time Limit per Question:</p>
         <div className="dropdown-button" onClick={() => setShowDropdown(!showDropdown)}>
-          {timeLimit}
+          {timeLimit} sec
         </div>
         {showDropdown && (
           <div className="dropdown">
-            {['10 sec', '15 sec', '20 sec'].map((time) => (
+            {[10, 15, 20].map((time) => (
               <div
                 key={time}
                 className="dropdown-item"
                 onClick={() => handleTimeSelect(time)}
               >
-                <span
-                  className={`dropdown-item-text ${
-                    timeLimit === time ? 'selected-text' : ''
-                  }`}
-                >
-                  {time}
+                <span className={`dropdown-item-text ${timeLimit === time ? 'selected-text' : ''}`}>
+                  {time} sec
                 </span>
               </div>
             ))}
@@ -65,7 +65,9 @@ function CreateRoom() {
         )}
       </label>
       <div className="btn">
-        <button className="create-button" onClick={handleSaveSettings}>Save and Continue</button>
+        <button className="create-button" onClick={handleSaveSettings}>
+          Save and Continue
+        </button>
       </div>
     </div>
   );

@@ -5,8 +5,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 function Quiz() {
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [question, setQuestion] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(10);
-  const [progress, setProgress] = useState(100);
+  const [timeLeft, setTimeLeft] = useState(10); // Default timer
+  const [progress, setProgress] = useState(100); // Progress bar for timer
   const socket = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,43 +18,75 @@ function Quiz() {
       return;
     }
 
+    // Initialize question from state and timer from server
     const stateQuestion = location.state?.question;
     const timeLimitFromServer = location.state?.timeLimit;
-    
+
     if (stateQuestion) {
       setQuestion(stateQuestion);
       setTimeLeft(parseInt(timeLimitFromServer));
       setProgress(100);
     }
 
+    // Listen for a new question
     socket.on("questionSelected", (q) => {
       setQuestion(q);
-      setTimeLeft(parseInt(q.timeLimit));
-      setProgress(100);
+      setTimeLeft(parseInt(q.timeLimit)); // Reset timer for the new question
+      setProgress(100); // Reset progress bar
+    });
+
+    // Listen for navigation to results
+    socket.on("navigateToResults", (data) => {
+      navigate("/result", {
+        state: {
+          roomCode,
+          score: data.score,
+          totalQuestions: data.totalQuestions,
+        },
+      });
     });
 
     return () => {
       socket.off("questionSelected");
+      socket.off("navigateToResults");
     };
-  }, [location, socket, roomCode]);
+  }, [location, socket, roomCode, navigate]);
+
+  // Timer logic
+  useEffect(() => {
+    if (timeLeft > 0) {
+      const interval = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+        setProgress((prev) => Math.max(0, (prev - 100 / timeLeft))); // Update progress bar
+      }, 1000);
+
+      return () => clearInterval(interval); // Clear timer on unmount or question change
+    } else {
+      handleTimeUp();
+    }
+  }, [timeLeft]);
 
   const handleTimeUp = () => {
     if (!roomCode) return;
-    socket.emit("answerSubmitted", { 
-      questionId: question.id, 
+
+    // Automatically submit a null answer when time runs out
+    socket.emit("answerSubmitted", {
+      questionId: question.id,
       answer: null,
-      roomCode 
+      roomCode,
     });
+
     navigate("/waitingquestion", { state: { roomCode } });
   };
 
   const submitAnswer = () => {
     if (selectedAnswer && roomCode) {
-      socket.emit("answerSubmitted", { 
-        questionId: question.id, 
+      socket.emit("answerSubmitted", {
+        questionId: question.id,
         answer: selectedAnswer,
-        roomCode 
+        roomCode,
       });
+
       navigate("/waitingquestion", { state: { roomCode } });
     }
   };

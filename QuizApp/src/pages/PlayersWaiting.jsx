@@ -6,8 +6,8 @@ function PlayersWaiting() {
   const socket = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
-  const { roomCode } = location.state || {}; // Get room code passed from CreateRoom
-  const [playerCount, setPlayerCount] = useState(1); // Quizmaster is already in
+  const { roomCode } = location.state || {}; 
+  const [playerCount, setPlayerCount] = useState(1); 
 
   useEffect(() => {
     socket.on("playerJoined", (count) => {
@@ -15,7 +15,7 @@ function PlayersWaiting() {
     });
 
     socket.on("roomReady", () => {
-      setPlayerCount(2); // Both players connected
+      setPlayerCount(2); 
     });
 
     socket.on("roomClosed", () => {
@@ -23,7 +23,6 @@ function PlayersWaiting() {
       navigate("/");
     });
 
-    // Listen for navigation events for both quizmaster and player
     socket.on("navigateToWaitingForPlayer", () => {
       console.log("Redirecting quizmaster to WaitingForPlayer.");
       navigate("/waitingforplayer", { state: { roomCode } });
@@ -44,9 +43,8 @@ function PlayersWaiting() {
   }, [socket, navigate]);
 
   const handleStartGame = () => {
-    socket.emit("startQuiz", roomCode); // Notify the server to start the quiz
+    socket.emit("startQuiz", roomCode); 
     
-    // Listen for navigation events and extract roomCode from data
     socket.on("navigateToWaitingForPlayer", (data) => {
       console.log("Redirecting quizmaster to WaitingForPlayer.");
       navigate("/waitingforplayer", { state: { roomCode: data.roomCode } });
