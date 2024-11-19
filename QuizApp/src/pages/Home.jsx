@@ -13,12 +13,11 @@ function Home() {
 
   const handleCreateRoom = () => {
     const roomCode = generateRoomCode();
-    // Pass default settings that will be updated in CreateRoom
     socket.emit("createRoom", { 
       roomCode, 
       settings: { 
         questions: 5, 
-        timeLimit: 10 // Store as number
+        timeLimit: 10
       } 
     });
 
@@ -39,8 +38,11 @@ function Home() {
     }
     socket.emit("joinRoom", code);
 
-    socket.on("playerJoined", () => navigate("/playerswaiting"));
-    socket.on("error", (message) => alert(message));
+    socket.once("playerJoined", (playerCount) => {
+      navigate("/playerswaiting", { state: { roomCode: code, isPlayer: true } });
+    });
+    
+    socket.once("error", (message) => alert(message));
   };
 
   return (

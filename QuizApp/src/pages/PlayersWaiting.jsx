@@ -6,16 +6,26 @@ function PlayersWaiting() {
   const socket = useSocket();
   const navigate = useNavigate();
   const location = useLocation();
-  const { roomCode } = location.state || {}; 
-  const [playerCount, setPlayerCount] = useState(1); 
+  const { roomCode, isPlayer } = location.state || {};
+  const [playerCount, setPlayerCount] = useState(1);
+  const [showStartButton, setShowStartButton] = useState(false);
 
   useEffect(() => {
+    // Handle initial room state
+    socket.emit("getRoomState", roomCode);
+
     socket.on("playerJoined", (count) => {
+      console.log("Player joined, count:", count);
       setPlayerCount(count);
+      if (count === 2) {
+        setShowStartButton(!isPlayer); // Only show for quizmaster
+      }
     });
 
     socket.on("roomReady", () => {
-      setPlayerCount(2); 
+      console.log("Room ready");
+      setPlayerCount(2);
+      setShowStartButton(!isPlayer); // Only show for quizmaster
     });
 
     socket.on("roomClosed", () => {
@@ -23,13 +33,13 @@ function PlayersWaiting() {
       navigate("/");
     });
 
-    socket.on("navigateToWaitingForPlayer", () => {
-      console.log("Redirecting quizmaster to WaitingForPlayer.");
+    socket.on("navigateToWaitingForPlayer", ({ roomCode }) => {
+      console.log("Redirecting quizmaster to WaitingForPlayer");
       navigate("/waitingforplayer", { state: { roomCode } });
     });
 
-    socket.on("navigateToWaitingForQuizmaster", () => {
-      console.log("Redirecting player to WaitingForQuizmaster.");
+    socket.on("navigateToWaitingForQuizmaster", ({ roomCode }) => {
+      console.log("Redirecting player to WaitingForQuizmaster");
       navigate("/waitingforquizmaster", { state: { roomCode } });
     });
 
@@ -40,20 +50,14 @@ function PlayersWaiting() {
       socket.off("navigateToWaitingForPlayer");
       socket.off("navigateToWaitingForQuizmaster");
     };
-  }, [socket, navigate]);
+  }, [socket, navigate, roomCode, isPlayer]);
 
   const handleStartGame = () => {
-    socket.emit("startQuiz", roomCode); 
-    
-    socket.on("navigateToWaitingForPlayer", (data) => {
-      console.log("Redirecting quizmaster to WaitingForPlayer.");
-      navigate("/waitingforplayer", { state: { roomCode: data.roomCode } });
-    });
-  
-    socket.on("navigateToWaitingForQuizmaster", (data) => {
-      console.log("Redirecting player to WaitingForQuizmaster.");
-      navigate("/waitingforquizmaster", { state: { roomCode: data.roomCode } });
-    });
+    if (!roomCode) {
+      console.error("No room code available");
+      return;
+    }
+    socket.emit("startQuiz", roomCode);
   };
 
   return (
@@ -63,7 +67,7 @@ function PlayersWaiting() {
       {playerCount < 2 ? (
         <p>Waiting for players to join...</p>
       ) : (
-        <button onClick={handleStartGame}>START GAME</button>
+        showStartButton && <button onClick={handleStartGame}>START GAME</button>
       )}
     </div>
   );

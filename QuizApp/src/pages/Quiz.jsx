@@ -103,7 +103,7 @@ function Quiz() {
             <div className="timer-track">
               <div className="timer-bar" style={{ width: `${progress}%` }}></div>
             </div>
-            <p>Time left: {timeLeft}s</p>
+            <p>{timeLeft}s</p>
           </div>
 
           <div className="answer-options">
